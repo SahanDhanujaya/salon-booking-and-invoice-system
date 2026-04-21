@@ -47,7 +47,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-linear-to-br from-slate-100 via-blue-50 to-indigo-100 flex items-center justify-center px-4">
+    <div className="min-h-screen w-full bg-linear-to-br from-slate-100 via-blue-50 to-indigo-100 flex items-center justify-center px-4 py-4">
       <div className="w-full max-w-md">
         <div className="rounded-3xl bg-white/80 backdrop-blur-xl shadow-2xl border border-white/40 p-8">
           <div className="mb-8 text-center">

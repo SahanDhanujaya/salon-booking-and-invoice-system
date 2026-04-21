@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Signin as SigninFormData } from "@/types/signin";
 import { EyeIcon, EyeClosedIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const Signin = () => {
   const [formData, setFormData] = useState<SigninFormData>({
@@ -12,6 +13,7 @@ const Signin = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -23,6 +25,7 @@ const Signin = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(formData, rememberMe);
+    router.push("/dashboard");
   };
 
   return (
