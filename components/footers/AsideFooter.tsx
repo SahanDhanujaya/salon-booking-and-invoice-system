@@ -1,10 +1,11 @@
 import { LogOutIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
 const AsideFooter = () => {
   const [loading, setLoading] = useState(false);
-
+  const router = useRouter();
   const handleLogout = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -13,6 +14,7 @@ const AsideFooter = () => {
       setLoading(false);
       toast.success("Logged out successfully!");
     }, 2000);
+    router.push("/auth/signin");
   };
 
 
