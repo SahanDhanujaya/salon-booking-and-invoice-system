@@ -1,3 +1,6 @@
+'use client';
+import ServiceForm from "@/components/forms/ServiceForm";
+import { ServiceFormData } from "@/types/service";
 import {
   Scissors,
   Sparkles,
@@ -8,6 +11,7 @@ import {
   Clock3,
   TrendingUp,
 } from "lucide-react";
+import { useState } from "react";
 
 const popularServices = [
   {
@@ -88,8 +92,20 @@ const recentActivities = [
   },
 ];
 
+
 const ServicePage = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  if (isFormOpen) {
+    return (
+      <ServiceForm
+        onClose={() => setIsFormOpen(false)}
+      />
+    );
+  }
+
   return (
+    
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 mt-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Services</h1>
@@ -152,7 +168,7 @@ const ServicePage = () => {
         <div className="xl:col-span-2 rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">Popular Services</h2>
-            <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button onClick={() => setIsFormOpen(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
               Add Service
             </button>
           </div>
@@ -298,5 +314,6 @@ const ServicePage = () => {
     </div>
   );
 };
+
 
 export default ServicePage;

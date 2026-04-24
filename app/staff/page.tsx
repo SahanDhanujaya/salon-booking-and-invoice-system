@@ -1,3 +1,6 @@
+"use client";
+import StaffForm from "@/components/forms/StaffForm";
+import { StaffFormData } from "@/types/staff";
 import {
   Users,
   UserCheck,
@@ -8,6 +11,7 @@ import {
   Clock3,
   Star,
 } from "lucide-react";
+import { useState } from "react";
 
 const staffMembers = [
   {
@@ -76,6 +80,19 @@ const recentActivities = [
 ];
 
 const StaffPage = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffFormData | undefined>(
+    undefined,
+  );
+  
+  if (isFormOpen) {
+    return (
+      <StaffForm
+        staffData={selectedStaff}
+        onClose={() => setIsFormOpen(false)}
+      />
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 mt-8">
       <div className="mb-6">
@@ -139,7 +156,7 @@ const StaffPage = () => {
         <div className="xl:col-span-2 rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">Staff Members</h2>
-            <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button onClick={() => setIsFormOpen(true)} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
               Add Staff
             </button>
           </div>
@@ -195,7 +212,12 @@ const StaffPage = () => {
                   <button className="flex-1 rounded-xl bg-gray-100 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">
                     View
                   </button>
-                  <button className="flex-1 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                  <button
+                    onClick={() => {
+                      setIsFormOpen(true);
+                    }}
+                    className="flex-1 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  >
                     Edit
                   </button>
                 </div>
@@ -279,9 +301,7 @@ const StaffPage = () => {
                   <td className="px-3 py-4 font-medium text-gray-800">
                     {activity.name}
                   </td>
-                  <td className="px-3 py-4 text-gray-600">
-                    {activity.action}
-                  </td>
+                  <td className="px-3 py-4 text-gray-600">{activity.action}</td>
                   <td className="px-3 py-4 text-gray-600">{activity.time}</td>
                   <td className="px-3 py-4">
                     <span
@@ -289,8 +309,8 @@ const StaffPage = () => {
                         activity.status === "Completed"
                           ? "bg-green-100 text-green-600"
                           : activity.status === "In Progress"
-                          ? "bg-yellow-100 text-yellow-600"
-                          : "bg-red-100 text-red-600"
+                            ? "bg-yellow-100 text-yellow-600"
+                            : "bg-red-100 text-red-600"
                       }`}
                     >
                       {activity.status}

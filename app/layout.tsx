@@ -15,9 +15,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Saloon Booking and Invoice System",
+  title: "Salon Booking and Invoice System",
   description:
-    "Saloon Booking and Invoice System built with Next.js and Tailwind CSS",
+    "Salon Booking and Invoice System built with Next.js and Tailwind CSS",
+  icons: "/public/gentlemen.png",
 };
 
 export default function RootLayout({
