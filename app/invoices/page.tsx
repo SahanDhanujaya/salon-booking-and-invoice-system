@@ -1,3 +1,5 @@
+"use client";
+import InvoiceForm from "@/components/forms/InvoiceForm";
 import {
   ReceiptText,
   DollarSign,
@@ -8,6 +10,7 @@ import {
   Scissors,
   CreditCard,
 } from "lucide-react";
+import { useState } from "react";
 
 const invoices = [
   {
@@ -76,6 +79,12 @@ const recentActivities = [
 ];
 
 const InvoicePage = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  if (isFormOpen) {
+    return (
+      <InvoiceForm onClose={() => setIsFormOpen(false)} />
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 mt-8">
       <div className="mb-6">
@@ -139,7 +148,10 @@ const InvoicePage = () => {
         <div className="xl:col-span-2 rounded-2xl bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">Invoice Records</h2>
-            <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              onClick={() => setIsFormOpen(true)}
+            >
               <Plus className="h-4 w-4" />
               New Invoice
             </button>

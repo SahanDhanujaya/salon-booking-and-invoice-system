@@ -1,3 +1,5 @@
+"use client";
+import AppointmentForm from "@/components/forms/AppointmentForm";
 import {
   CalendarDays,
   Clock3,
@@ -7,6 +9,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import { useState } from "react";
 
 const appointments = [
   {
@@ -99,6 +102,13 @@ const recentActivities = [
 ];
 
 const AppointmentPage = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  if (isFormOpen) {
+    return (
+      <AppointmentForm onClose={() => setIsFormOpen(false)} />
+    );
+  }
+    
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 mt-8">
       <div className="mb-6">
@@ -168,7 +178,10 @@ const AppointmentPage = () => {
             <h2 className="text-xl font-bold text-gray-800">
               Upcoming Appointments
             </h2>
-            <button className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+            <button
+              className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              onClick={() => setIsFormOpen(true)}
+            >
               <Plus className="h-4 w-4" />
               Add Booking
             </button>
