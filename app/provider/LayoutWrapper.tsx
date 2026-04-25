@@ -17,7 +17,8 @@ export default function LayoutWrapper({
   const isAuthPage =
     pathname === "/auth/signin" ||
     pathname === "/auth/signup" ||
-    pathname === "/";
+    pathname === "/" || 
+    pathname.endsWith("/view-all");
 
   if (isAuthPage) {
     return (

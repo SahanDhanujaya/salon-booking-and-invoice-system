@@ -9,6 +9,7 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 const appointments = [
@@ -173,7 +174,7 @@ const AppointmentPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2 rounded-2xl bg-white p-5 shadow-sm">
+        <div className="xl:col-span-2 rounded-2xl bg-white p-5 shadow-sm h-fit">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800">
               Upcoming Appointments
@@ -249,6 +250,11 @@ const AppointmentPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="text-center">
+            <Link href="/appointments/view-all" className="text-blue-600 hover:underline text-sm mt-4 inline-block">
+              View All Appointments
+            </Link>
           </div>
         </div>
 

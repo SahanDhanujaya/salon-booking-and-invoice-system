@@ -18,10 +18,9 @@ export const metadata: Metadata = {
   title: "Salon Booking and Invoice System",
   description:
     "Salon Booking and Invoice System built with Next.js and Tailwind CSS",
-  icons: "/public/gentlemen.png",
 };
 
-export default function RootLayout({
+export default function RootLayout({ 
   children,
 }: Readonly<{
   children: React.ReactNode;

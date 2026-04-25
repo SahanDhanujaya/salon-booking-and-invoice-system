@@ -11,6 +11,7 @@ import {
   Clock3,
   TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 const popularServices = [
@@ -216,6 +217,11 @@ const ServicePage = () => {
                 </div>
               );
             })}
+          </div>
+          <div className="text-center">
+            <Link href="/services/view-all" className="text-blue-600 hover:underline text-sm mt-4 inline-block">
+              View All Services
+            </Link>
           </div>
         </div>
 

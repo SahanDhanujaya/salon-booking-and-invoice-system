@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Star,
 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 const customers = [
@@ -212,6 +213,11 @@ const CustomersPage = () => {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="text-center">
+            <Link href="/customers/view-all" className="text-blue-600 hover:underline text-sm mt-4 inline-block">
+              View All Customers
+            </Link>
           </div>
         </div>
 

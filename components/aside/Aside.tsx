@@ -57,7 +57,7 @@ const Aside = () => {
       )}
 
       <aside
-        className={`fixed left-0 top-0 z-50 h-screen w-64 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ${
+        className={`fixed left-0 top-0 z-150 h-screen w-64 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ${
           isAsideOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
