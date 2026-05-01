@@ -49,6 +49,7 @@ const Signin = () => {
       const response = await login(formData);
       if (response?.status === 200) {
         toast.success("Loging Successfull!");
+        router.push("/dashboard");
       } else {
         toast.error("Loging Unsuccessfull!");
       }
@@ -56,7 +57,6 @@ const Signin = () => {
       console.log("Login Failed!", error);
       toast.error("Login Failed!");
     }
-    router.push("/dashboard");
     stopLoading();
   };
 

@@ -10,7 +10,8 @@ import PageLoader from "@/components/common/PageLoader";
 import LoaderLink from "@/components/common/LoaderLink";
 
 type SignupFormData = {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -19,7 +20,8 @@ type SignupFormData = {
 
 const Signup = () => {
   const [formData, setFormData] = useState<SignupFormData>({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -68,11 +70,11 @@ const Signup = () => {
     stopLoading();
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     stopLoading();
-  })
+  });
 
-  if (isLoading) return <PageLoader />
+  if (isLoading) return <PageLoader />;
 
   return (
     <div className="min-h-screen w-full bg-linear-to-br from-slate-100 via-blue-50 to-indigo-100 flex items-center justify-center px-4 py-4">
@@ -89,22 +91,41 @@ const Signup = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label
-                htmlFor="fullName"
-                className="mb-2 block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="Enter your full name"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
+            <div className="space-y-4">
+              <div>
+                <label
+                  htmlFor="firstName"
+                  className="mb-2 block text-sm font-medium text-gray-700"
+                >
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Enter your first name"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="lastName"
+                  className="mb-2 block text-sm font-medium text-gray-700"
+                >
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Enter your last name"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+              </div>
             </div>
 
             <div>
@@ -215,7 +236,12 @@ const Signup = () => {
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}
-            <LoaderLink href="/auth/signin" className="font-semibold text-blue-600 hover:text-blue-700">Sign In</LoaderLink>
+            <LoaderLink
+              href="/auth/signin"
+              className="font-semibold text-blue-600 hover:text-blue-700"
+            >
+              Sign In
+            </LoaderLink>
           </p>
         </div>
       </div>

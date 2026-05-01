@@ -1,19 +1,5 @@
 import apiClient from "@/api/AxiosClient";
-import { SigninType } from "@/types/login";
-import { RegisterType } from "@/types/register";
 import { UserType } from "@/types/user";
-
-export const register = (formdata: RegisterType) => {
-    return apiClient.post("/auth/register", formdata)
-}
-
-export const login = (formData: SigninType) => {
-    return apiClient.post("/auth/login", formData)
-}
-
-export const logout = () => {
-    return apiClient.post("/auth/logout")
-}
 
 export const getProfile = () => {
     return apiClient.get("/user/me")
