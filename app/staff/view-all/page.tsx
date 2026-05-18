@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -13,135 +13,112 @@ import {
   Pencil,
   Mail,
   Phone,
-  Clock3,
   MapPin,
   User,
   Star,
 } from "lucide-react";
 import DetailsModal from "@/components/common/modals/DetailsModal";
 import StaffForm from "@/components/forms/StaffForm";
+import { StaffFormData } from "@/types/staff";
+import { getStaffMembers } from "@/services/staffService";
+import { toast } from "react-toastify";
+import { useLoader } from "@/app/provider/LoaderContext";
+import PageLoader from "@/components/common/PageLoader";
 
-type Staff = {
-  id: number;
-  fullName: string;
-  role: string;
-  email: string;
-  phone: string;
-  shift: string;
-  salary: string;
-  address: string;
-  joinDate: string;
-  status: string;
-  specialization: string;
-  imageUrl?: string;
-  notes?: string;
+const STATUS_TYPES = {
+  active: "Active",
+  onleave: "On Leave",
+  inactive: "Inactive",
 };
 
-const staffList: Staff[] = [
-  {
-    id: 1,
-    fullName: "Nethmi Perera",
-    role: "Senior Stylist",
-    email: "nethmi@example.com",
-    phone: "+94 77 123 4567",
-    shift: "9:00 AM - 6:00 PM",
-    salary: "75000",
-    address: "Colombo, Sri Lanka",
-    joinDate: "2025-01-15",
-    status: "Active",
-    specialization: "Hair Styling, Hair Coloring",
-    imageUrl: "",
-    notes: "Top performer in premium services",
-  },
-  {
-    id: 2,
-    fullName: "Kavindi Silva",
-    role: "Hair Color Specialist",
-    email: "kavindi@example.com",
-    phone: "+94 71 987 6543",
-    shift: "10:00 AM - 7:00 PM",
-    salary: "68000",
-    address: "Gampaha, Sri Lanka",
-    joinDate: "2025-03-10",
-    status: "Active",
-    specialization: "Hair Coloring, Balayage",
-    imageUrl: "",
-    notes: "Handles most coloring appointments",
-  },
-  {
-    id: 3,
-    fullName: "Sanduni Fernando",
-    role: "Beautician",
-    email: "sanduni@example.com",
-    phone: "+94 76 456 7890",
-    shift: "8:30 AM - 5:30 PM",
-    salary: "62000",
-    address: "Kandy, Sri Lanka",
-    joinDate: "2024-11-22",
-    status: "On Leave",
-    specialization: "Facial Treatment, Skin Care",
-    imageUrl: "",
-    notes: "Currently on approved leave",
-  },
-  {
-    id: 4,
-    fullName: "Tharushi Jayasekara",
-    role: "Receptionist",
-    email: "tharushi@example.com",
-    phone: "+94 75 222 3344",
-    shift: "9:00 AM - 5:00 PM",
-    salary: "50000",
-    address: "Panadura, Sri Lanka",
-    joinDate: "2026-01-05",
-    status: "Active",
-    specialization: "Booking Management, Front Desk",
-    imageUrl: "",
-    notes: "Strong customer communication skills",
-  },
-  {
-    id: 5,
-    fullName: "Piumi Silva",
-    role: "Makeup Artist",
-    email: "piumi@example.com",
-    phone: "+94 74 456 1111",
-    shift: "11:00 AM - 8:00 PM",
-    salary: "70000",
-    address: "Negombo, Sri Lanka",
-    joinDate: "2025-06-18",
-    status: "Inactive",
-    specialization: "Bridal Makeup, Party Makeup",
-    imageUrl: "",
-    notes: "Available on special bookings only",
-  },
-];
+const ITEMS_PER_PAGE = 5;
 
 const ViewAllStaffPage = () => {
   const router = useRouter();
 
   const [search, setSearch] = useState("");
-  const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
+  const [selectedStaff, setSelectedStaff] = useState<StaffFormData | null>(
+    null
+  );
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [staffList, setStaffList] = useState<StaffFormData[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { startLoading, stopLoading, isLoading } = useLoader();
+
+  useEffect(() => {
+    const fetchAllStaff = async () => {
+      try {
+        startLoading();
+
+        const response = await getStaffMembers();
+
+        const staffData = response?.data?.data || response?.data || [];
+
+        setStaffList(Array.isArray(staffData) ? staffData : []);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to fetch staff members!");
+      } finally {
+        stopLoading();
+      }
+    };
+
+    fetchAllStaff();
+  }, []);
 
   const filteredStaff = useMemo(() => {
     const keyword = search.toLowerCase();
 
     return staffList.filter(
       (staff) =>
-        staff.fullName.toLowerCase().includes(keyword) ||
-        staff.role.toLowerCase().includes(keyword) ||
-        staff.email.toLowerCase().includes(keyword) ||
-        staff.phone.toLowerCase().includes(keyword) ||
-        staff.status.toLowerCase().includes(keyword)
+        staff.fullName?.toLowerCase().includes(keyword) ||
+        staff.role?.toLowerCase().includes(keyword) ||
+        staff.email?.toLowerCase().includes(keyword) ||
+        staff.phone?.toLowerCase().includes(keyword) ||
+        staff.status?.toLowerCase().includes(keyword)
     );
+  }, [search, staffList]);
+
+  const totalPages = Math.ceil(filteredStaff.length / ITEMS_PER_PAGE);
+
+  const paginatedStaff = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+
+    return filteredStaff.slice(startIndex, endIndex);
+  }, [filteredStaff, currentPage]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentPage(1);
   }, [search]);
 
-  const handleView = (staff: Staff) => {
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const totalStaff = staffList.length;
+  const activeStaff = staffList.filter(
+    (staff) => staff.status === "active"
+  ).length;
+  const onLeaveStaff = staffList.filter(
+    (staff) => staff.status === "onleave"
+  ).length;
+  const inactiveStaff = staffList.filter(
+    (staff) => staff.status === "inactive"
+  ).length;
+
+  const handleView = (staff: StaffFormData) => {
     setSelectedStaff(staff);
     setIsViewModalOpen(true);
   };
 
-  const handleEdit = (staff: Staff) => {
+  const handleEdit = (staff: StaffFormData) => {
     setSelectedStaff(staff);
     setIsEditModalOpen(true);
   };
@@ -155,6 +132,8 @@ const ViewAllStaffPage = () => {
     setIsEditModalOpen(false);
     setSelectedStaff(null);
   };
+
+  if (isLoading) return <PageLoader>Loading Staff...</PageLoader>;
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -196,7 +175,7 @@ const ViewAllStaffPage = () => {
               <div>
                 <p className="text-sm text-gray-500">Total Staff</p>
                 <h2 className="mt-2 text-2xl font-bold text-gray-800">
-                  {staffList.length}
+                  {totalStaff}
                 </h2>
               </div>
               <div className="rounded-xl bg-blue-100 p-3 text-blue-600">
@@ -209,7 +188,9 @@ const ViewAllStaffPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Active Staff</p>
-                <h2 className="mt-2 text-2xl font-bold text-gray-800">3</h2>
+                <h2 className="mt-2 text-2xl font-bold text-gray-800">
+                  {activeStaff}
+                </h2>
               </div>
               <div className="rounded-xl bg-green-100 p-3 text-green-600">
                 <UserCheck className="h-5 w-5" />
@@ -221,7 +202,9 @@ const ViewAllStaffPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">On Leave</p>
-                <h2 className="mt-2 text-2xl font-bold text-gray-800">1</h2>
+                <h2 className="mt-2 text-2xl font-bold text-gray-800">
+                  {onLeaveStaff}
+                </h2>
               </div>
               <div className="rounded-xl bg-yellow-100 p-3 text-yellow-600">
                 <Briefcase className="h-5 w-5" />
@@ -233,7 +216,9 @@ const ViewAllStaffPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Inactive</p>
-                <h2 className="mt-2 text-2xl font-bold text-gray-800">1</h2>
+                <h2 className="mt-2 text-2xl font-bold text-gray-800">
+                  {inactiveStaff}
+                </h2>
               </div>
               <div className="rounded-xl bg-red-100 p-3 text-red-600">
                 <UserX className="h-5 w-5" />
@@ -262,15 +247,21 @@ const ViewAllStaffPage = () => {
                   <th className="px-3 py-3 font-medium">Action</th>
                 </tr>
               </thead>
+
               <tbody>
-                {filteredStaff.map((staff) => (
-                  <tr key={staff.id} className="border-b last:border-b-0">
+                {paginatedStaff.map((staff, index) => (
+                  <tr
+                    key={staff._id || index}
+                    className="border-b last:border-b-0"
+                  >
                     <td className="px-3 py-4">
                       <div>
                         <p className="font-semibold text-gray-800">
                           {staff.fullName}
                         </p>
-                        <p className="text-xs text-gray-500">ID: #{staff.id}</p>
+                        <p className="text-xs text-gray-500">
+                          ID: #{staff._id}
+                        </p>
                       </div>
                     </td>
 
@@ -286,6 +277,7 @@ const ViewAllStaffPage = () => {
                           <Mail className="h-3.5 w-3.5" />
                           <span>{staff.email}</span>
                         </div>
+
                         <div className="flex items-center gap-2 text-gray-600">
                           <Phone className="h-3.5 w-3.5" />
                           <span>{staff.phone}</span>
@@ -293,25 +285,30 @@ const ViewAllStaffPage = () => {
                       </div>
                     </td>
 
-                    <td className="px-3 py-4 text-gray-600">{staff.shift}</td>
+                    <td className="px-3 py-4 text-gray-600">
+                      {staff.shift}
+                    </td>
 
                     <td className="px-3 py-4">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
-                          staff.status === "Active"
+                          staff.status === "active"
                             ? "bg-green-100 text-green-600"
-                            : staff.status === "On Leave"
+                            : staff.status === "onleave"
                             ? "bg-yellow-100 text-yellow-700"
                             : "bg-red-100 text-red-600"
                         }`}
                       >
-                        {staff.status}
+                        {STATUS_TYPES[
+                          staff.status as keyof typeof STATUS_TYPES
+                        ] || staff.status}
                       </span>
                     </td>
 
                     <td className="px-3 py-4">
                       <div className="flex gap-2">
                         <button
+                          type="button"
                           onClick={() => handleView(staff)}
                           className="inline-flex items-center gap-1 rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
                         >
@@ -320,6 +317,7 @@ const ViewAllStaffPage = () => {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => handleEdit(staff)}
                           className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 transition hover:bg-amber-100"
                         >
@@ -344,6 +342,71 @@ const ViewAllStaffPage = () => {
               </tbody>
             </table>
           </div>
+
+          {filteredStaff.length > 0 && (
+            <div className="mt-5 flex flex-col items-center justify-between gap-4 border-t pt-4 sm:flex-row">
+              <p className="text-sm text-gray-500">
+                Showing{" "}
+                <span className="font-medium text-gray-700">
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-medium text-gray-700">
+                  {Math.min(
+                    currentPage * ITEMS_PER_PAGE,
+                    filteredStaff.length
+                  )}
+                </span>{" "}
+                of{" "}
+                <span className="font-medium text-gray-700">
+                  {filteredStaff.length}
+                </span>{" "}
+                records
+              </p>
+
+              {totalPages > 1 && (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, index) => index + 1)
+                    .slice(
+                      Math.max(currentPage - 3, 0),
+                      Math.min(currentPage + 2, totalPages)
+                    )
+                    .map((page) => (
+                      <button
+                        type="button"
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
+                          currentPage === page
+                            ? "bg-blue-600 text-white"
+                            : "border border-gray-200 text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -356,8 +419,18 @@ const ViewAllStaffPage = () => {
           <div>
             <div className="mb-6 flex items-center gap-4">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-                <User className="h-8 w-8 text-blue-600" />
+                {selectedStaff.imageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={selectedStaff.imageUrl}
+                    alt={selectedStaff.fullName}
+                    className="h-16 w-16 rounded-full object-cover"
+                  />
+                ) : (
+                  <User className="h-16 w-16 text-blue-600" />
+                )}
               </div>
+
               <div>
                 <h3 className="text-xl font-semibold text-gray-800">
                   {selectedStaff.fullName}
@@ -370,7 +443,7 @@ const ViewAllStaffPage = () => {
               <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
                 <span className="text-gray-500">Staff ID</span>
                 <span className="font-medium text-gray-800">
-                  #{selectedStaff.id}
+                  #{selectedStaff._id}
                 </span>
               </div>
 
@@ -412,7 +485,9 @@ const ViewAllStaffPage = () => {
               <div className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3">
                 <span className="text-gray-500">Status</span>
                 <span className="font-medium text-gray-800">
-                  {selectedStaff.status}
+                  {STATUS_TYPES[
+                    selectedStaff.status as keyof typeof STATUS_TYPES
+                  ] || selectedStaff.status}
                 </span>
               </div>
 
@@ -450,6 +525,7 @@ const ViewAllStaffPage = () => {
       {isEditModalOpen && selectedStaff && (
         <StaffForm
           staffData={{
+            _id: selectedStaff._id,
             fullName: selectedStaff.fullName,
             role: selectedStaff.role,
             email: selectedStaff.email,

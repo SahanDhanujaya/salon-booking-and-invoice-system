@@ -5,7 +5,7 @@ interface Status {
   
 }
 export type StaffFormData = {
-  id?: string;
+  _id?: string;
   fullName: string;
   role: string;
   email: string;
@@ -19,6 +19,7 @@ export type StaffFormData = {
   imageUrl: File | string;
   publicId: string;
   notes: string;
+  rating?: number;
 };
 
 

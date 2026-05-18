@@ -1,5 +1,7 @@
 "use client";
+import LoaderLink from "@/components/common/LoaderLink";
 import StaffForm from "@/components/forms/StaffForm";
+import { getStaffMembers } from "@/services/staffService";
 import { StaffFormData } from "@/types/staff";
 import {
   Users,
@@ -11,47 +13,15 @@ import {
   Clock3,
   Star,
 } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLoader } from "../provider/LoaderContext";
+import PageLoader from "@/components/common/PageLoader";
 
-const staffMembers = [
-  {
-    name: "Nethmi Perera",
-    role: "Senior Stylist",
-    email: "nethmi@example.com",
-    phone: "+94 77 123 4567",
-    shift: "9:00 AM - 6:00 PM",
-    status: "Active",
-    rating: "4.9",
-  },
-  {
-    name: "Kavindi Silva",
-    role: "Hair Color Specialist",
-    email: "kavindi@example.com",
-    phone: "+94 71 987 6543",
-    shift: "10:00 AM - 7:00 PM",
-    status: "Active",
-    rating: "4.8",
-  },
-  {
-    name: "Sanduni Fernando",
-    role: "Beautician",
-    email: "sanduni@example.com",
-    phone: "+94 76 456 7890",
-    shift: "8:30 AM - 5:30 PM",
-    status: "On Leave",
-    rating: "4.7",
-  },
-  {
-    name: "Tharushi Jayasekara",
-    role: "Receptionist",
-    email: "tharushi@example.com",
-    phone: "+94 75 222 3344",
-    shift: "9:00 AM - 5:00 PM",
-    status: "Active",
-    rating: "4.6",
-  },
-];
+const STATUS_TYPES = {
+  active: "Active",
+  onLeave: "On Leave",
+  inactive: "Inactive",
+};
 
 const recentActivities = [
   {
@@ -85,6 +55,18 @@ const StaffPage = () => {
   const [selectedStaff, setSelectedStaff] = useState<StaffFormData | undefined>(
     undefined,
   );
+  const [staffMembers, setStaffMembers] = useState<StaffFormData[]>([]);
+  const {isLoading, startLoading, stopLoading} = useLoader();
+
+  useEffect(() => {
+    startLoading();
+    const fetchStaffMembers = async () => {
+      const response = await getStaffMembers();
+      setStaffMembers(response?.data);
+    };
+    fetchStaffMembers();
+    stopLoading();
+  }, [startLoading, stopLoading]);
   
   if (isFormOpen) {
     return (
@@ -94,6 +76,9 @@ const StaffPage = () => {
       />
     );
   }
+
+  if (isLoading) return <PageLoader>Loading Staff...</PageLoader>;
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-6 mt-8">
       <div className="mb-6">
@@ -163,72 +148,75 @@ const StaffPage = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {staffMembers.map((staff) => (
-              <div
-                key={staff.email}
-                className="rounded-2xl border border-gray-100 p-4 transition hover:shadow-md"
-              >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800">
-                      {staff.name}
-                    </h3>
-                    <p className="text-sm text-blue-600">{staff.role}</p>
+            {staffMembers.map((staff, index) => {
+              if (index >= 4) return null; // Show only first 4 staff members for brevity
+              return (
+                <div
+                  key={staff.email}
+                  className="rounded-2xl border border-gray-100 p-4 transition hover:shadow-md"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {staff.fullName}
+                      </h3>
+                      <p className="text-sm text-blue-600">{staff.role}</p>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        staff.status === "active"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {STATUS_TYPES[staff.status as keyof typeof STATUS_TYPES]}
+                    </span>
                   </div>
 
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      staff.status === "Active"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {staff.status}
-                  </span>
+                  <div className="mt-4 space-y-3 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-gray-400" />
+                      <span>{staff.email}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      <span>{staff.phone}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Clock3 className="h-4 w-4 text-gray-400" />
+                      <span>{staff.shift}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Star className="h-4 w-4 text-yellow-500" />
+                      <span>{staff.rating || "N/A"} Rating</span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex gap-2">
+                    <button className="flex-1 rounded-xl bg-gray-100 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      View
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsFormOpen(true);
+                      }}
+                      className="flex-1 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    >
+                      Edit
+                    </button>
+                  </div>
                 </div>
-
-                <div className="mt-4 space-y-3 text-sm text-gray-600">
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-400" />
-                    <span>{staff.email}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-gray-400" />
-                    <span>{staff.phone}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock3 className="h-4 w-4 text-gray-400" />
-                    <span>{staff.shift}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Star className="h-4 w-4 text-yellow-500" />
-                    <span>{staff.rating} Rating</span>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                  <button className="flex-1 rounded-xl bg-gray-100 py-2 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    View
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsFormOpen(true);
-                    }}
-                    className="flex-1 rounded-xl bg-blue-600 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                  >
-                    Edit
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="text-center">
-            <Link href="/staff/view-all" className="text-blue-600 hover:underline text-sm mt-4 inline-block">
+            <LoaderLink href="/staff/view-all" className="text-blue-600 hover:underline text-sm mt-4 inline-block">
               View All Staff
-            </Link>
+            </LoaderLink>
           </div>
         </div>
 

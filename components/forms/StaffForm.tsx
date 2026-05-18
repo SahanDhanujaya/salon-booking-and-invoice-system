@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   User,
   Mail,
@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 import { StaffFormData } from "@/types/staff";
 import { useLoader } from "@/app/provider/LoaderContext";
 import PageLoader from "../common/PageLoader";
-import { saveStaffMember } from "@/services/staffService";
+import { getStaffMember, saveStaffMember, updateStaffMember } from "@/services/staffService";
 import { uploadImage } from "@/services/uploadImageService";
 
 type StaffFormProps = {
@@ -83,33 +83,36 @@ const StaffForm = ({ staffData, onClose, onSubmit }: StaffFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    startLoading();
 
+    // Validate before starting loader
     if (!formData.fullName.trim()) {
       toast.error("Staff name is required");
-      stopLoading();
       return;
     }
 
     if (!formData.role.trim()) {
       toast.error("Role is required");
-      stopLoading();
       return;
     }
 
     if (!formData.email.trim()) {
       toast.error("Email is required");
-      stopLoading();
       return;
     }
 
     if (!formData.phone.trim()) {
       toast.error("Phone number is required");
-      stopLoading();
       return;
     }
 
+    let shouldClose = false;
+
     try {
+      startLoading();
+      if (staffData?._id) {
+        await updateStaffMember(staffData._id, formData);
+      }
+
       let updatedFormData = { ...formData };
 
       if (formData.imageUrl instanceof File) {
@@ -120,15 +123,13 @@ const StaffForm = ({ staffData, onClose, onSubmit }: StaffFormProps) => {
           imageUrl: uploadResponse.data.imageUrl,
           publicId: uploadResponse.data.publicId,
         };
-
-        setFormData(updatedFormData);
       }
 
       const response = await saveStaffMember(updatedFormData);
 
       if (response?.status === 200 || response?.status === 201) {
         toast.success("Staff added successfully!");
-        onClose();
+        shouldClose = true;
       } else {
         toast.error("Something went wrong");
       }
@@ -136,6 +137,10 @@ const StaffForm = ({ staffData, onClose, onSubmit }: StaffFormProps) => {
       console.error(error);
       toast.error("Something went wrong");
     } finally {
+     onClose();
+    }
+
+    if (shouldClose) {
       stopLoading();
     }
   };
@@ -148,7 +153,7 @@ const StaffForm = ({ staffData, onClose, onSubmit }: StaffFormProps) => {
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">
-              {staffData?.id ? "Edit Staff Member" : "Add Staff Member"}
+              {staffData?._id ? "Edit Staff Member" : "Add Staff Member"}
             </h2>
             <p className="text-sm text-gray-500">
               Fill in the staff details below
@@ -384,7 +389,7 @@ const StaffForm = ({ staffData, onClose, onSubmit }: StaffFormProps) => {
                 >
                   {isLoading
                     ? "Saving..."
-                    : staffData?.id
+                    : staffData?._id
                       ? "Update Staff"
                       : "Add Staff"}
                 </button>
@@ -411,7 +416,11 @@ const StaffForm = ({ staffData, onClose, onSubmit }: StaffFormProps) => {
                   {formData.imageUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={formData.imageUrl instanceof File ? URL.createObjectURL(formData.imageUrl) : formData.imageUrl}
+                      src={
+                        formData.imageUrl instanceof File
+                          ? URL.createObjectURL(formData.imageUrl)
+                          : formData.imageUrl
+                      }
                       alt="Staff preview"
                       className="h-24 w-24 rounded-full object-cover"
                     />
